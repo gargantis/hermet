@@ -38,6 +38,14 @@ What the shared code expects of an app:
 
 The shared code imports `eslint`, `@eslint/js`, `typescript-eslint` and `ws` from the app's `node_modules`. This repo's `devDependencies` exist only to run its own gate.
 
+## What stays in each app
+
+Similar code that is not shared, and why:
+- **Byte codecs and state hashes** (amorfus `src/core/codec/`, `src/core/sync/digest.ts`; roslambo `src/core/protocol/bytes.ts`, `src/core/sim/hash.ts`): same shape, different contracts. amorfus's reader throws and hashes with SHA-256; roslambo's flags `bad` and hashes with MurmurHash3. Each app's goldens and wire format pin its own.
+- **The Trystero room config** (`src/net/room-config.ts`): both build a literal typed against `JoinRoomConfig`, but amorfus runs Trystero 0.25.4 with a patch and roslambo 0.26.0, whose options differ. It can move here once both run one version.
+- **Per-app data and targets:** `third-party.json` and its test, `wrangler.jsonc` and its test, `vite.config.ts`, `playwright.config.ts`, `index.html` and the CI workflow.
+- **`.gitignore`, `.npmrc` and `.nvmrc`:** git and npm read them only from the repo itself.
+
 ## Change
 
 In a standalone clone: `npm ci`, change the code, `npm run check` (lint, public-scan and the tests), commit on a branch, land it on `main`, push. Then, in each app, on a session branch: check out the new commit in `vendor/gate`, run the app's `npm run check`, and commit the new pin. Never edit an app's `vendor/gate` in place.
