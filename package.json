@@ -1,8 +1,8 @@
 {
-  "name": "gate",
+  "name": "hermet",
   "private": true,
   "version": "0.0.0",
-  "description": "The gate tooling amorfus and roslambo share: public-scan, the dist audit, licence notices, the exact-ops lint and a local Nostr relay",
+  "description": "The checks that keep a serverless browser app hermetic, shared by amorfus and roslambo: public-scan, the dist audit, licence notices, the exact-ops lint and a local Nostr relay",
   "license": "MIT",
   "type": "module",
   "engines": {

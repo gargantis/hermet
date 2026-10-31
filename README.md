@@ -1,6 +1,8 @@
-# gate
+# hermet
 
-The gate tooling that [amorfus](https://github.com/gargantis/amorfus) and [roslambo](https://github.com/gargantis/roslambo) share. Each app's `npm run check`, its gate and definition of done, runs these checks. The code began in amorfus and was copied into roslambo, where it improved; it lives here so the two stop drifting apart.
+Hermet keeps a serverless browser app hermetic: the app depends on nothing and reveals nothing it hasn't declared. Like the hermit crab, it lives in a borrowed shell (whatever origin, IPFS gateway or browser session hosts it) and moves on.
+
+[amorfus](https://github.com/gargantis/amorfus) and [roslambo](https://github.com/gargantis/roslambo) run these checks as part of `npm run check`, their definition of done. The code began in amorfus and was copied into roslambo, where it improved; it lives here so the two stop drifting apart.
 
 | File | What it does | The app calls it from |
 |---|---|---|
@@ -14,10 +16,10 @@ The gate tooling that [amorfus](https://github.com/gargantis/amorfus) and [rosla
 
 ## Use
 
-An app mounts this repo as a git submodule at `vendor/gate`:
+An app mounts this repo as a git submodule at `vendor/hermet`:
 
 ```sh
-git submodule add https://github.com/gargantis/gate.git vendor/gate
+git submodule add https://github.com/gargantis/hermet.git vendor/hermet
 ```
 
 Clone an app with `--recurse-submodules`, or run `git submodule update --init` after cloning. Its CI checks out with `submodules: true`.
@@ -25,7 +27,7 @@ Clone an app with `--recurse-submodules`, or run `git submodule update --init` a
 The app keeps its own policy in a few lines that call the shared code. For example, roslambo's `scripts/audit-dist.mjs`:
 
 ```js
-import { runAuditDist } from '../vendor/gate/audit-dist.mjs';
+import { runAuditDist } from '../vendor/hermet/audit-dist.mjs';
 
 await runAuditDist({ ignoredHosts: ['stun'] });
 ```
@@ -34,9 +36,9 @@ What the shared code expects of an app:
 - `third-party.json` at the repo root, an array of `{ host, url, kind, purpose, operator, sees }`, one entry per external host. The dist audit allows exactly those hosts.
 - `scripts/expected-licenses.json`, the npm package names whose notices must ship.
 - `build.license.fileName: '.license-npm.json'` in `vite.config.ts`.
-- `vendor/gate/**/*.test.mjs` in its vitest `include`, so its gate also runs these tests, under its own versions of ESLint, ws and vitest. The ESLint base ignores `vendor/**`: this repo lints itself.
+- `vendor/hermet/**/*.test.mjs` in its vitest `include`, so its `npm run check` also runs these tests, under its own versions of ESLint, ws and vitest. The ESLint base ignores `vendor/**`: this repo lints itself.
 
-The shared code imports `eslint`, `@eslint/js`, `typescript-eslint` and `ws` from the app's `node_modules`. This repo's `devDependencies` exist only to run its own gate.
+The shared code imports `eslint`, `@eslint/js`, `typescript-eslint` and `ws` from the app's `node_modules`. This repo's `devDependencies` exist only to run its own checks.
 
 ## What stays in each app
 
@@ -48,7 +50,7 @@ Similar code that is not shared, and why:
 
 ## Change
 
-In a standalone clone: `npm ci`, change the code, `npm run check` (lint, public-scan and the tests), commit on a branch, land it on `main`, push. Then, in each app, on a session branch: check out the new commit in `vendor/gate`, run the app's `npm run check`, and commit the new pin. Never edit an app's `vendor/gate` in place.
+In a standalone clone: `npm ci`, change the code, `npm run check` (lint, public-scan and the tests), commit on a branch, land it on `main`, push. Then, in each app, on a session branch: check out the new commit in `vendor/hermet`, run the app's `npm run check`, and commit the new pin. Never edit an app's `vendor/hermet` in place.
 
 ## License
 

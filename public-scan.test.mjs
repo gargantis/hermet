@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { scanText, isProbablyBinary } from './public-scan.mjs';
 
-// public-scan fails the gate on absolute home paths and key material in a
+// public-scan fails on absolute home paths and key material in a
 // repo's files, and on terms from an optional denylist kept outside it.
 // Fixture strings are assembled at runtime so this file itself never
 // contains what the scanner hunts for.
@@ -63,13 +63,13 @@ describe('runPublicScan', () => {
         '--input-type=module',
         '-e',
         `import { runPublicScan } from ${JSON.stringify(new URL('./public-scan.mjs', import.meta.url).href)};
-         runPublicScan({ termsEnv: 'GATE_TEST_TERMS' });`,
+         runPublicScan({ termsEnv: 'HERMET_TEST_TERMS' });`,
       ],
-      { cwd: join(dir, 'repo'), env: { ...process.env, GATE_TEST_TERMS: '', ...env }, encoding: 'utf8' },
+      { cwd: join(dir, 'repo'), env: { ...process.env, HERMET_TEST_TERMS: '', ...env }, encoding: 'utf8' },
     );
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'gate-public-scan-'));
+    dir = mkdtempSync(join(tmpdir(), 'hermet-public-scan-'));
     const repo = join(dir, 'repo');
     mkdirSync(join(repo, 'sub'), { recursive: true });
     git(repo, 'init', '-q');
@@ -92,7 +92,7 @@ describe('runPublicScan', () => {
     writeFileSync(join(dir, 'repo', 'b.md'), `see ${home('home', 'someone')}x\n`);
     writeFileSync(join(dir, 'repo', 'c.md'), 'a secretword here\n');
     writeFileSync(join(dir, 'terms'), '# comment\nsecretword\n');
-    const r = scan({ GATE_TEST_TERMS: join(dir, 'terms') });
+    const r = scan({ HERMET_TEST_TERMS: join(dir, 'terms') });
     expect(r.status).toBe(1);
     expect(r.stderr).toContain('b.md:1: absolute home path');
     expect(r.stderr).toContain('c.md:1: denylist term');

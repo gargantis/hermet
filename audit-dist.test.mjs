@@ -11,7 +11,7 @@ let dir;
 const opts = (over = {}) => ({ allowedHosts: ['relay.damus.io', 'stun.cloudflare.com'], expectedLicensePackages: [], ...over });
 
 beforeEach(async () => {
-  dir = await mkdtemp(join(tmpdir(), 'gate-audit-'));
+  dir = await mkdtemp(join(tmpdir(), 'hermet-audit-'));
   await writeFile(join(dir, 'index.html'), '<!doctype html><script type="module" src="./assets/a.js"></script>');
   await mkdir(join(dir, 'assets'), { recursive: true });
   await writeFile(join(dir, 'assets', 'a.js'), 'console.log("hi")');

@@ -9,7 +9,7 @@ import { writeLicenseNotices } from './licenses.mjs';
 let dir;
 let dist;
 beforeEach(async () => {
-  dir = await mkdtemp(join(tmpdir(), 'gate-licenses-'));
+  dir = await mkdtemp(join(tmpdir(), 'hermet-licenses-'));
   dist = join(dir, 'dist');
   await mkdir(dist);
 });

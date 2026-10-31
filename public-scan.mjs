@@ -1,6 +1,6 @@
 // public-scan: a public repo must never carry a home path, private key
 // material or a term from the owner's private denylist. scanText and
-// isProbablyBinary are pure, so the gate's behaviour is unit-tested without
+// isProbablyBinary are pure, so the scan's behaviour is unit-tested without
 // git or files; runPublicScan is what each repo's scripts/public-scan.mjs
 // calls.
 import { execFileSync } from 'node:child_process';

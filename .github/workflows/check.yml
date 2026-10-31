@@ -1,4 +1,4 @@
-# The gate on push and pull request: lint, public-scan and the unit tests.
+# npm run check on push and pull request: lint, public-scan and the unit tests.
 # No secrets in CI.
 name: check
 
