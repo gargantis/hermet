@@ -35,6 +35,11 @@ describe('audit-dist', () => {
     expect(whys(await auditDist(dir, opts())).filter((w) => w === 'root-absolute URL')).toHaveLength(3);
   });
 
+  it('reads a root-absolute URL only at the start of a string', async () => {
+    await writeFile(join(dir, 'assets', 'a.js'), 'x(`${n}/8 players · ${o}/${t}`);y(`/api/${id}`)');
+    expect((await auditDist(dir, opts())).findings.map((f) => f.detail)).toEqual(['/api/']);
+  });
+
   it('fails on an unresolved relative reference', async () => {
     await writeFile(join(dir, 'index.html'), '<script type="module" src="./assets/missing.js"></script>');
     expect(whys(await auditDist(dir, opts()))).toContain('unresolved reference');
@@ -127,5 +132,11 @@ describe('audit-dist exceptions an app passes', () => {
     await writeFile(join(dir, 'assets', 'a.js'), 'const s = `stun:stun${i}.l.google.com:19302`;');
     expect((await auditDist(dir, opts())).findings.map((f) => f.detail)).toEqual(['stun']);
     expect((await auditDist(dir, opts({ ignoredHosts: ['stun'] }))).findings).toEqual([]);
+  });
+
+  it('skips the root-path strings the app names, and only those', async () => {
+    await writeFile(join(dir, 'assets', 'a.js'), 'p.startsWith("/ipfs/")||p.startsWith(`/ipns/`)||fetch("/ipfs/x")');
+    expect((await auditDist(dir, opts())).findings.map((f) => f.detail)).toEqual(['/ipfs/', '/ipns/', '/ipfs/x']);
+    expect((await auditDist(dir, opts({ ignoredPaths: ['/ipfs/', '/ipns/'] }))).findings.map((f) => f.detail)).toEqual(['/ipfs/x']);
   });
 });

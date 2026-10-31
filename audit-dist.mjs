@@ -29,6 +29,8 @@ const LOOPBACK = new Set(['127.0.0.1', 'localhost', '::1', '[::1]', '0.0.0.0']);
  * Audits the built folder `dir`. Beyond the two lists, each option is an
  * app's own exception, empty by default:
  * - `ignoredHosts`: host-shaped text that names no host;
+ * - `ignoredPaths`: JS strings that start with '/' but are never
+ *   requested, such as a prefix compared with location.pathname;
  * - `textFiles`: extensionless base names that may ship, scanned as text
  *   (a static host's `_headers`);
  * - `forbiddenFiles`: patterns for base names that must never ship, beyond
@@ -38,7 +40,15 @@ const LOOPBACK = new Set(['127.0.0.1', 'localhost', '::1', '[::1]', '0.0.0.0']);
  */
 export async function auditDist(
   dir,
-  { allowedHosts, expectedLicensePackages, ignoredHosts = [], textFiles = [], forbiddenFiles = [], loopbackFiles = [] },
+  {
+    allowedHosts,
+    expectedLicensePackages,
+    ignoredHosts = [],
+    ignoredPaths = [],
+    textFiles = [],
+    forbiddenFiles = [],
+    loopbackFiles = [],
+  },
 ) {
   const findings = [];
   const files = await walk(dir);
@@ -71,7 +81,8 @@ export async function auditDist(
     // in a comment is dead text (licence headers carry them). HTML and CSS
     // are scanned in full. Licence notices are text, not requests.
     if (base === 'THIRD-PARTY-LICENSES.txt') continue;
-    const hostScanText = ext === '.js' ? jsStringLiterals(text).join('\n') : text;
+    const strings = ext === '.js' ? jsStrings(text) : [];
+    const hostScanText = ext === '.js' ? strings.map((s) => s.text).join('\n') : text;
     for (const m of hostScanText.matchAll(URL_RE)) {
       const host = m[1].toLowerCase();
       if (host === 'www.w3.org') continue; // namespace URLs never produce requests
@@ -83,7 +94,10 @@ export async function auditDist(
     if (ext === '.html') checkRefs(htmlRefs(text), rel, relFiles, findings);
     else if (ext === '.css') checkRefs(cssRefs(text), rel, relFiles, findings);
     else if (ext === '.js') {
-      for (const s of jsStringLiterals(text)) {
+      // Only a string's start can be root-absolute: in `${n}/8`, the "/8"
+      // after the expression continues the string.
+      for (const { text: s, continued } of strings) {
+        if (continued || ignoredPaths.includes(s)) continue;
         if (s.startsWith('/') && !s.startsWith('//')) {
           findings.push({ file: rel, why: 'root-absolute URL', detail: s });
         }
@@ -150,7 +164,8 @@ function cssRefs(text) {
 // A small tokenizer, enough for minified JS: comments, quoted strings,
 // template literals with nested ${…} expressions, and regex literals
 // (a '/' where an operand may start). It returns every string's text and
-// every template's static parts. A regular expression alone can't track
+// every template's static parts, marking the parts that follow a ${…}
+// expression as `continued`. A regular expression alone can't track
 // nested templates, and read code between two of them as a string.
 // It jumps between the characters that matter, so a 25 MiB file is quick.
 const SPECIAL = /["'`/{}]/g;
@@ -173,14 +188,18 @@ function regexMayStart(text, i) {
 }
 
 export function jsStringLiterals(text) {
+  return jsStrings(text).map((s) => s.text);
+}
+
+function jsStrings(text) {
   const out = [];
   const braces = []; // per open template expression: '{' depth inside it
   let i = 0;
-  const template = () => {
+  const template = (continued) => {
     // i is just after a backtick, or after the '}' closing an expression.
     TEMPLATE_PART.lastIndex = i;
     const m = TEMPLATE_PART.exec(text);
-    out.push(m[1]);
+    out.push({ text: m[1], continued });
     i = TEMPLATE_PART.lastIndex;
     if (m[2] === '${') braces.push(0);
   };
@@ -204,19 +223,19 @@ export function jsStringLiterals(text) {
       re.lastIndex = i;
       const q = re.exec(text);
       if (q) {
-        out.push(q[1]);
+        out.push({ text: q[1], continued: false });
         i = re.lastIndex;
       } else i++;
     } else if (c === '`') {
       i++;
-      template();
+      template(false);
     } else if (c === '{') {
       if (braces.length > 0) braces[braces.length - 1]++;
       i++;
     } else if (braces.length > 0 && braces[braces.length - 1] === 0) {
       braces.pop(); // the '}' closing a template expression
       i++;
-      template();
+      template(true);
     } else {
       if (braces.length > 0) braces[braces.length - 1]--;
       i++;
