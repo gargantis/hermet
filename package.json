@@ -2,7 +2,7 @@
   "name": "hermet",
   "private": true,
   "version": "0.0.0",
-  "description": "The checks that keep a serverless browser app hermetic, shared by amorfus and roslambo: public-scan, the dist audit, licence notices, the exact-ops lint and a local Nostr relay",
+  "description": "The checks that keep a serverless browser app hermetic, shared by amorfus and roslambo: public-scan, the dist audit, licence notices, the exact-ops lint, a local Nostr relay and the Trystero room config",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -10,12 +10,14 @@
   },
   "scripts": {
     "lint": "eslint .",
+    "typecheck": "tsc",
     "public-scan": "node scripts/public-scan.mjs",
     "test": "vitest run",
-    "check": "npm run lint && npm run public-scan && npm run test"
+    "check": "npm run lint && npm run typecheck && npm run public-scan && npm run test"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
+    "@trystero-p2p/nostr": "0.26.0",
     "eslint": "^10.0.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.0",

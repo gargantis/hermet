@@ -8,12 +8,13 @@ This repo is **public**. Never commit home paths, account names or other identit
 
 ## `npm run check` is the definition of done
 
-Lint, public-scan and the unit tests. It must pass before a commit lands. Never weaken it to make a build pass: fix the code.
+Lint, typecheck, public-scan and the unit tests. It must pass before a commit lands. Never weaken it to make a build pass: fix the code.
 
 ## Contracts that are easy to break
 
 - No app's policy lives here. What differs between the apps (a denylist variable, IPFS file rules, a host-shaped string to ignore) is an option the app passes from its own wrapper, documented where the option is defined. Defaults stay at the strictest common behaviour.
-- The code runs under each app's versions of ESLint, ws and vitest, resolved from the app's `node_modules`. Use only what those versions share.
+- The code runs under each app's versions of ESLint, ws, vitest and Trystero, resolved from the app's `node_modules`. Use only what those versions share.
+- `room-config.ts` ships in the apps' browser bundles and each app's `tsc` checks it: browser APIs only, and erasable TypeScript only (roslambo sets `erasableSyntaxOnly`).
 - A change reaches an app only when the app moves its `vendor/hermet` pin, on its own session branch, with its own `npm run check` passing. A change in behaviour says in its commit what each app must do at its next bump.
 - Never edit an app's `vendor/hermet` checkout in place: change this repo, then move the pins.
 
