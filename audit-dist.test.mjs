@@ -95,6 +95,18 @@ describe('audit-dist', () => {
     expect(whys(await auditDist(dir, opts()))).toContain('secret pattern');
   });
 
+  it('fails on a licence notice that carries no licence text', async () => {
+    await writeFile(
+      join(dir, 'THIRD-PARTY-LICENSES.txt'),
+      'Third-party notices.\n\n## full@1.0.0\n\nMIT\n\nPermission is granted.\n\n## bare@2.0.0\n\nMIT\n\n## none@3.0.0\n',
+    );
+    const r = await auditDist(dir, opts({ expectedLicensePackages: ['full', 'bare', 'none'] }));
+    expect(r.findings.map((f) => [f.why, f.detail])).toEqual([
+      ['licence notice without text', 'bare'],
+      ['licence notice without text', 'none'],
+    ]);
+  });
+
   it('fails when the licence notices are missing or list the wrong packages', async () => {
     await writeFile(join(dir, 'THIRD-PARTY-LICENSES.txt'), '## left-pad@1.0.0\nMIT\n');
     expect(whys(await auditDist(dir, opts()))).toContain('licence list mismatch');

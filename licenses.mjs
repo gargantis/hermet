@@ -2,7 +2,8 @@
 // dist/THIRD-PARTY-LICENSES.txt. writeLicenseNotices turns the npm licence
 // JSON Vite writes (build.license.fileName '.license-npm.json') into that
 // file, then deletes the JSON so the dist audit never sees it; the audit
-// checks the list against scripts/expected-licenses.json.
+// checks the list against scripts/expected-licenses.json, and that every
+// section carries its licence text.
 import { existsSync } from 'node:fs';
 import { readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -17,10 +18,15 @@ export async function writeLicenseNotices({ product, dist = join(process.cwd(), 
   const licenseJson = join(dist, '.license-npm.json');
   const parts = [];
   if (existsSync(licenseJson)) {
-    // Vite (Rolldown) emits an array of { name, version, license, licenseText? }.
+    // Vite 8 emits an array of { name, version, identifier?, text? }:
+    // `identifier` is the package.json licence and `text` its LICENSE file,
+    // each absent when the package has none. The names this file read
+    // before, `license` and `licenseText`, are kept as fallbacks.
     const raw = JSON.parse(await readFile(licenseJson, 'utf8'));
     const list = Array.isArray(raw) ? raw : (raw.dependencies ?? []);
-    for (const dep of list) parts.push(notice(dep.name, dep.version, dep.license ?? '', dep.licenseText ?? ''));
+    for (const dep of list) {
+      parts.push(notice(dep.name, dep.version, dep.identifier ?? dep.license ?? '', dep.text ?? dep.licenseText ?? ''));
+    }
     await rm(licenseJson);
   }
   for (const e of extra) parts.push(notice(e.name, e.version, e.license, await readFile(e.file, 'utf8')));

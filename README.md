@@ -7,7 +7,7 @@ Hermet keeps a serverless browser app hermetic: the app depends on nothing and r
 | File | What it does | The app calls it from |
 |---|---|---|
 | `public-scan.mjs` | Fails on home paths, private key material and private denylist terms in the repo's tracked and untracked files | `scripts/public-scan.mjs` |
-| `audit-dist.mjs` | Audits the built `dist/`: relative references only, no host outside `third-party.json`, no secrets, no forbidden files, exactly the expected licence notices | `scripts/audit-dist.mjs` |
+| `audit-dist.mjs` | Audits the built `dist/`: relative references only, no host outside `third-party.json`, no secrets, no forbidden files, exactly the expected licence notices, each with its licence text | `scripts/audit-dist.mjs` |
 | `licenses.mjs` | Writes `dist/THIRD-PARTY-LICENSES.txt` from the licence JSON Vite emits | `scripts/licenses.mjs` |
 | `room-config.ts` | Builds Trystero's `joinRoom` config from what the app declares only: the relays and STUN servers in `third-party.json`, and a receive budget the app sets. Trystero never falls back on its own relays, STUN servers or 256 MiB budget | `src/net/room-config.ts` |
 | `eslint/exact-ops.mjs` | ESLint rule: only exactly rounded operations, for code that must hash the same on every machine | `eslint.config.mjs` |

@@ -106,15 +106,24 @@ export async function auditDist(
   }
 
   // The licence list against the expected package set. writeLicenseNotices
-  // (licenses.mjs) heads each package's section `## name@version`.
+  // (licenses.mjs) heads each package's section `## name@version`, then
+  // writes its licence identifier and its licence text. A section with one
+  // line or none, the identifier alone, ships no licence text at all.
   if (!relFiles.has('THIRD-PARTY-LICENSES.txt')) {
     findings.push({ file: 'THIRD-PARTY-LICENSES.txt', why: 'missing licence notices' });
   } else {
     const text = await readFile(join(dir, 'THIRD-PARTY-LICENSES.txt'), 'utf8');
-    const present = new Set([...text.matchAll(/^## (@?[A-Za-z0-9._/-]+?)@[0-9]/gm)].map((m) => m[1]));
+    const sections = [];
+    for (const line of text.split('\n')) {
+      const heading = /^## (@?[A-Za-z0-9._/-]+?)@[0-9]/.exec(line);
+      if (heading) sections.push({ name: heading[1], lines: 0 });
+      else if (sections.length && line.trim()) sections[sections.length - 1].lines++;
+    }
+    const present = new Set(sections.map((s) => s.name));
     const expected = new Set(expectedLicensePackages);
     for (const p of present) if (!expected.has(p)) findings.push({ file: 'THIRD-PARTY-LICENSES.txt', why: 'licence list mismatch', detail: `unexpected ${p}` });
     for (const p of expected) if (!present.has(p)) findings.push({ file: 'THIRD-PARTY-LICENSES.txt', why: 'licence list mismatch', detail: `missing ${p}` });
+    for (const s of sections) if (s.lines < 2) findings.push({ file: 'THIRD-PARTY-LICENSES.txt', why: 'licence notice without text', detail: s.name });
   }
 
   return { findings };
