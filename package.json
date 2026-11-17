@@ -2,7 +2,7 @@
   "name": "hermet",
   "private": true,
   "version": "0.0.0",
-  "description": "The checks that keep a serverless browser app hermetic, shared by amorfus and roslambo: public-scan, the dist audit, licence notices, the exact-ops lint, a local Nostr relay and the Trystero room config",
+  "description": "The checks that keep a serverless browser app hermetic, shared by amorfus, roslambo and terriest: public-scan, the dist audit, licence notices, the exact-ops lint, a local Nostr relay and the Trystero room config",
   "license": "MIT",
   "type": "module",
   "engines": {

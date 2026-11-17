@@ -1,6 +1,6 @@
 # hermet: agent instructions
 
-The checks that keep amorfus and roslambo hermetic, mounted in each as the submodule `vendor/hermet`. [README.md](README.md) says what that means, what is here and how the apps call it.
+The checks that keep amorfus, roslambo and terriest hermetic, mounted in each as the submodule `vendor/hermet`. [README.md](README.md) says what that means, what is here and how the apps call it.
 
 The name is not a typo: it is hermetic and hermit at once. Never correct it to either word.
 

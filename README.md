@@ -2,7 +2,7 @@
 
 Hermet keeps a serverless browser app hermetic: the app depends on nothing and reveals nothing it hasn't declared. Like the hermit crab, it lives in a borrowed shell (whatever origin, IPFS gateway or browser session hosts it) and moves on.
 
-[amorfus](https://github.com/gargantis/amorfus) and [roslambo](https://github.com/gargantis/roslambo) run these checks as part of `npm run check`, their definition of done. The code began in amorfus and was copied into roslambo, where it improved; it lives here so the two stop drifting apart.
+[amorfus](https://github.com/gargantis/amorfus), [roslambo](https://github.com/gargantis/roslambo) and [terriest](https://github.com/gargantis/terriest) run these checks as part of `npm run check`, their definition of done. The code began in amorfus and was copied into roslambo, where it improved; it lives here so the apps stop drifting apart. terriest has mounted it since its M1.
 
 | File | What it does | The app calls it from |
 |---|---|---|
@@ -11,8 +11,8 @@ Hermet keeps a serverless browser app hermetic: the app depends on nothing and r
 | `licenses.mjs` | Writes `dist/THIRD-PARTY-LICENSES.txt` from the licence JSON Vite emits | `scripts/licenses.mjs` |
 | `room-config.ts` | Builds Trystero's `joinRoom` config from what the app declares only: the relays and STUN servers in `third-party.json`, and a receive budget the app sets. Trystero never falls back on its own relays, STUN servers or 256 MiB budget | `src/net/room-config.ts` |
 | `eslint/exact-ops.mjs` | ESLint rule: only exactly rounded operations, for code that must hash the same on every machine | `eslint.config.mjs` |
-| `eslint/base.mjs` | The ESLint setup both apps start from | `eslint.config.mjs` |
-| `tsconfig.base.json` | The TypeScript strictness both apps share | `tsconfig.json` (`extends`) |
+| `eslint/base.mjs` | The ESLint setup the apps start from | `eslint.config.mjs` |
+| `tsconfig.base.json` | The TypeScript strictness the apps share | `tsconfig.json` (`extends`) |
 | `nostr-relay.mjs` | A minimal local Nostr relay, so networking end-to-end tests contact nothing public | `e2e/` |
 
 ## Use
